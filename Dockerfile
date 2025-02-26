@@ -21,8 +21,8 @@ FROM node:20 AS frontend
 # Set the working directory for the frontend
 WORKDIR /app
 
-# Copy only the frontend package.json and package-lock.json first
-COPY frontend/package.json frontend/
+# Copy both package.json and package-lock.json
+COPY frontend/package.json frontend/package-lock.json ./frontend/
 
 # Install frontend dependencies
 RUN npm install --no-cache
