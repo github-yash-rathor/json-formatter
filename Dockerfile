@@ -1,11 +1,10 @@
-# Backend Dockerfile
-# Use the official Python image from Docker Hub
+# Backend Stage
 FROM python:3.10 AS backend
 
-# Set the working directory for the backend
+# Set working directory for backend
 WORKDIR /app/backend
 
-# Copy the backend requirements file
+# Copy and install backend dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -39,7 +38,7 @@ FROM python:3.10
 WORKDIR /app
 
 # Copy built frontend from frontend stage
-COPY --from=frontend /app/frontend/build /app/frontend/build
+COPY --from=frontend /app/frontend /app/frontend
 
 # Copy backend from backend stage
 COPY --from=backend /app/backend /app/backend
