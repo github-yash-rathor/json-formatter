@@ -1,74 +1,82 @@
-import React, {useState} from "react";
-import axios from "axios";
-import "materialize-css/dist/css/materialize.min.css";
+import React, { useState } from 'react';
+import './App.css';
 
 function App() {
-    const [jsonInput, setJsonInput] = useState("");
-    const [jsonOutput, setJsonOutput] = useState("");
+    const [jsonInput, setJsonInput] = useState('');
+    const [jsonOutput, setJsonOutput] = useState('');
+    const [error, setError] = useState('');
 
-    const handleJsonInputChange = (e) => {
+    const handleInputChange = (e) => {
         setJsonInput(e.target.value);
+        setError('');
     };
 
-    const formatJson = async () => {
+    const formatJson = () => {
+        if (!jsonInput.trim()) {
+            setError('Please enter JSON to format');
+            setJsonOutput('');
+            return;
+        }
+
         try {
-            const response = await axios.post("http://localhost:8000/format-json", {
-                json_string: jsonInput,
-            });
-            setJsonOutput(response.data.formatted_json);
-        } catch (error) {
-            alert("Invalid JSON or Server Error");
+            const parsedJson = JSON.parse(jsonInput);
+            const formattedJson = JSON.stringify(parsedJson, null, 2);
+            setJsonOutput(formattedJson);
+            setError('');
+        } catch (err) {
+            setError('Invalid JSON format');
+            setJsonOutput('');
         }
     };
 
     return (
-        <div
-            className="container-fluid"
-            style={{
-                backgroundColor: "#026997", // Light gray background
-                minHeight: "100vh",
-                padding: "20px",
-            }}
-        >
-            <div className="row">
-                <div className="col s12 m6">
-                    <h5 style={{color: "#ffffff"}}>Unformatted JSON</h5>
-                    <textarea
-                        className="textbox"
-                        value={jsonInput}
-                        onChange={handleJsonInputChange}
-                        style={{
-                            width: "100%",
-                            height: "80vh",
-                            backgroundColor: "#abd2fa",
-                            padding: "10px",
-                            borderRadius: "8px",
-                        }}
-                        placeholder="Enter unformatted JSON here"
-                    />
+        <div className="app-container">
+            <header className="app-header">
+                <h1>JSON Formatter</h1>
+                <p>Paste your JSON and format it with a click!</p>
+            </header>
+
+            <div className="container">
+                <div className="row">
+                    <div className="col s12 m6">
+                        <div className="input-section">
+                            <h5>Input JSON</h5>
+                            <textarea
+                                className="json-textarea"
+                                onChange={handleInputChange}
+                                placeholder="Enter unformatted JSON here..."
+                                value={jsonInput}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="col s12 m6">
+                        <div className="output-section">
+                            <h5>Formatted JSON</h5>
+                            <textarea
+                                className="json-textarea"
+                                value={jsonOutput}
+                                readOnly
+                                placeholder="Formatted JSON will appear here..."
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="col s12 m6">
-                    <h5 style={{color: "#ffffff"}}>Formatted JSON</h5>
-                    <textarea
-                        className="textbox"
-                        value={jsonOutput}
-                        readOnly
-                        style={{
-                            width: "100%",
-                            height: "80vh",
-                            backgroundColor: "#abd2fa", // Light blue background for formatted JSON
-                            padding: "10px",
-                            borderRadius: "8px",
-                        }}
-                        placeholder="Formatted JSON will appear here"
-                    />
+                {error && (
+                    <div className="error-message">
+                        {error}
+                    </div>
+                )}
+
+                <div className="button-container">
+                    <button
+                        className="format-button"
+                        onClick={formatJson}
+                    >
+                        Format JSON
+                    </button>
                 </div>
-            </div>
-            <div className="center-align" style={{marginTop: "20px"}}>
-                <button className="btn waves-effect waves-light green darken-2" onClick={formatJson}>
-                    Format JSON
-                </button>
             </div>
         </div>
     );
