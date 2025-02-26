@@ -15,19 +15,19 @@ RUN pip install -r requirements.txt
 COPY backend/ .
 
 # Frontend Dockerfile
-# Use the official Node.js image from Docker Hub
+# Use the official Node.js image
 FROM node:20 AS frontend
 
-# Set the working directory for the frontend
+# Set working directory
 WORKDIR /app/frontend
 
-# Copy both package.json and package-lock.json into the container
-COPY frontend/package.json frontend/package-lock.json ./frontend/
+# Copy only the package.json and package-lock.json first
+COPY frontend/package.json frontend/package-lock.json ./
 
-# Install frontend dependencies
+# Install dependencies using npm ci for faster, cleaner install
 RUN npm ci --no-cache --verbose
 
-# Copy the entire frontend application code into the container
+# Copy the rest of the frontend code
 COPY frontend /app/frontend/
 
 # Build the frontend
