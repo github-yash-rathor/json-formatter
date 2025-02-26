@@ -25,7 +25,7 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
 # Install frontend dependencies
-RUN npm install --no-cache
+RUN npm ci --no-cache --verbose
 
 # Copy the entire frontend application code into the container
 COPY frontend /app/frontend/
