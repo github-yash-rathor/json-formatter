@@ -3,42 +3,49 @@
 FROM python:3.10 AS backend
 
 # Set the working directory for the backend
-WORKDIR /app
+WORKDIR /app/backend
 
 # Copy the backend requirements file
 COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the backend dependencies
-RUN pip install -r requirements.txt
+# Copy the rest of the backend code
+COPY backend /app/backend
 
-# Copy the backend application code
-COPY backend/ .
 
-# Frontend Dockerfile
-# Use the official Node.js image
+# Frontend Stage
 FROM node:20 AS frontend
 
-# Set working directory
+# Set working directory for frontend
 WORKDIR /app/frontend
 
-# Copy only the package.json and package-lock.json first
+# Copy only package files first to install dependencies
 COPY frontend/package.json frontend/package-lock.json ./
 
-# Install dependencies using npm ci for faster, cleaner install
-RUN npm ci --no-cache --verbose
+# Install dependencies
+RUN npm install --no-cache --verbose
 
-# Copy the rest of the frontend code
+# Copy all frontend files
 COPY frontend /app/frontend/
 
 # Build the frontend
 RUN npm run build
 
-# Expose necessary ports
-EXPOSE 5000
-EXPOSE 3000
 
-# Set environment variables for both frontend and backend
-ENV BACKEND_URL=http://localhost:5000
+# Final Stage - Combine Frontend & Backend
+FROM python:3.10
 
-# Start the backend application and frontend application
-CMD ["sh", "-c", "cd backend && python3 app.py & cd frontend && npm run start"]
+# Set working directory
+WORKDIR /app
+
+# Copy built frontend from frontend stage
+COPY --from=frontend /app/frontend/build /app/frontend/build
+
+# Copy backend from backend stage
+COPY --from=backend /app/backend /app/backend
+
+# Expose API port
+EXPOSE 8000
+
+# Start the backend server (Modify if using different framework)
+CMD ["python", "/app/backend/main.py"]
