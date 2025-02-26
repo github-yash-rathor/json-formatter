@@ -19,19 +19,19 @@ COPY backend/ .
 FROM node:20 AS frontend
 
 # Set the working directory for the frontend
-WORKDIR /app
+WORKDIR /app/frontend
 
-# Copy both package.json and package-lock.json
+# Copy both package.json and package-lock.json into the container
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
 # Install frontend dependencies
 RUN npm install --no-cache
 
-# Copy the entire frontend application code
-COPY frontend /app/frontend
+# Copy the entire frontend application code into the container
+COPY frontend /app/frontend/
 
 # Build the frontend
-RUN cd frontend && npm run build
+RUN npm run build
 
 # Expose necessary ports
 EXPOSE 5000
