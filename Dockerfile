@@ -1,45 +1,44 @@
-# Use an official Python image for the backend
+# Backend Dockerfile
+# Use the official Python image from Docker Hub
 FROM python:3.10 AS backend
 
+# Set the working directory for the backend
 WORKDIR /app
 
-# Install Python dependencies
-COPY backend/requirements.txt backend/
-RUN pip install --no-cache-dir -r backend/requirements.txt
+# Copy the backend requirements file
+COPY backend/requirements.txt .
 
-# Copy backend code
-COPY backend /app/backend
+# Install the backend dependencies
+RUN pip install -r requirements.txt
 
-# Use an official Node.js image for the frontend
+# Copy the backend application code
+COPY backend/ .
+
+# Frontend Dockerfile
+# Use the official Node.js image from Docker Hub
 FROM node:20 AS frontend
 
+# Set the working directory for the frontend
 WORKDIR /app
 
-# Copy frontend dependencies and install
-COPY frontend/package.json frontend/package-lock.json frontend/
-RUN cd frontend && npm install
+# Copy only the frontend package.json and package-lock.json first
+COPY frontend/package.json frontend/
 
-# Build the React frontend
+# Install frontend dependencies
+RUN npm install --no-cache
+
+# Copy the entire frontend application code
 COPY frontend /app/frontend
+
+# Build the frontend
 RUN cd frontend && npm run build
 
-# Final stage: Run the application
-FROM python:3.10
+# Expose necessary ports
+EXPOSE 5000
+EXPOSE 3000
 
-WORKDIR /app
+# Set environment variables for both frontend and backend
+ENV BACKEND_URL=http://localhost:5000
 
-# Copy backend files from the previous build stage
-COPY --from=backend /app/backend /app/backend
-COPY --from=backend /root/.local /root/.local
-
-# Copy the built frontend from the previous stage
-COPY --from=frontend /app/frontend/dist /app/backend/static
-
-# Set environment variables
-ENV PATH=/root/.local/bin:$PATH
-
-# Expose FastAPI port
-EXPOSE 8000
-
-# Start the backend with Uvicorn
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the backend application and frontend application
+CMD ["sh", "-c", "cd backend && python3 app.py & cd frontend && npm run start"]
